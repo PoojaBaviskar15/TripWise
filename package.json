@@ -1,0 +1,25 @@
+{
+  "name": "tripwise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon api/index.js",
+    "start": "node api/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.49.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "firebase": "^11.5.0",
+    "mongoose": "^8.12.2",
+    "nodemon": "^3.1.9",
+    "react-parallax": "^3.5.1",
+    "swiper": "^11.2.6"
+  }
+}
