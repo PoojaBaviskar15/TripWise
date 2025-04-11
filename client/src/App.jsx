@@ -15,7 +15,10 @@ import PendingApproval from "./pages/PendingApproval";
 import TourPackages from "./pages/Package";
 import SinglePackage from "./pages/SinglePackage";
 import EditProfile from "./components/EditProfile";
-import WishlistPage from "./pages/WishList";
+import WishlistPage from "./pages/WishlistPage";
+import MyReviewsPage from "./pages/MyReviewsPage";
+import Layout from "./components/Layout";
+import FooterTabs from "./components/TabsComponent";
 
 function AppRoutes() {
   const { user, role,  loading  } = useAuth();
@@ -43,10 +46,14 @@ function AppRoutes() {
         path="/edit-profile" 
         element={<ProtectedRoute allowedRoles={["user", "agency", "admin"]}><EditProfile /></ProtectedRoute>} 
       />
-      <Route 
-        path="/wishlist" 
-        element={<ProtectedRoute allowedRoles={["user", "agency"]}><WishlistPage /></ProtectedRoute>} 
-      />
+      <Route element={<ProtectedRoute allowedRoles={['user', 'agency']}><Layout /></ProtectedRoute>}>
+        <Route path="/wishlist/:userId" element={<WishlistPage />} />
+        {/* <Route path="/bookings/:userId" element={<BookingsPage />} /> */}
+        <Route path="/reviews/:userId" element={<MyReviewsPage />} />
+        {/* <Route path="/account/:userId" element={<AccountSettings />} /> */}
+      </Route>
+
+
     </Routes>
   );
 }
@@ -57,6 +64,7 @@ export default function App() {
       <BrowserRouter>
         <Header />
         <AppRoutes />
+        <FooterTabs />
       </BrowserRouter>
     </AuthProvider>
   );

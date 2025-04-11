@@ -1,5 +1,5 @@
-import React from "react";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { supabase } from "../../supabase";
 import {
   Box,
@@ -101,16 +101,21 @@ export default function PackagesPage() {
             >
               <MenuItem value="">Default</MenuItem>
               <MenuItem value="popular">
-                Most Popular <FavoriteIcon fontSize="small" />
+                <Box display="flex" alignItems="center" gap={1}>
+                  <FavoriteIcon fontSize="small" /> Most Popular
+                </Box>
               </MenuItem>
               <MenuItem value="ratings">
-                Best Ratings <StarIcon fontSize="small" />
+                <Box display="flex" alignItems="center" gap={1}>
+                  <StarIcon fontSize="small" /> Best Ratings
+                </Box>
               </MenuItem>
             </Select>
           </Box>
         </Box>
 
         <Box display="flex" flexDirection={isMobile ? "column" : "row"} gap={2}>
+          {/* Filters Sidebar */}
           <Box flex={1} minWidth={isMobile ? "100%" : "250px"}>
             <Accordion expanded={expanded || !isMobile} onChange={() => setExpanded(!expanded)}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -176,6 +181,7 @@ export default function PackagesPage() {
             </Accordion>
           </Box>
 
+          {/* Packages Grid */}
           <Box flex={3}>
             <Box
               sx={{
@@ -199,25 +205,28 @@ export default function PackagesPage() {
                 : filteredPackages.length === 0
                 ? <Typography variant="body1">No matching packages found.</Typography>
                 : filteredPackages.map(pkg => (
-                    <Box
-                      key={pkg.id}
-                      sx={{
-                        borderRadius: 2,
-                        boxShadow: 2,
-                        bgcolor: "background.paper",
-                        p: 2
-                      }}
-                    >
-                      <img
-                        src={pkg.image_urls?.[0] || "/assets/images/default-package.jpg"}
-                        alt={pkg.title}
-                        style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8 }}
-                      />
-                      <Typography variant="h6" mt={1}>{pkg.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">{pkg.location}</Typography>
-                      <Typography variant="body2">₹{pkg.price} • {pkg.duration} days</Typography>
-                      <Typography variant="caption" color="text.secondary">{pkg.category}</Typography>
-                    </Box>
+                    <Link to={`/package/${pkg.id}`} key={pkg.id} style={{ textDecoration: 'none', color: 'inherit' }}>
+                      <Box
+                        sx={{
+                          borderRadius: 2,
+                          boxShadow: 2,
+                          bgcolor: "background.paper",
+                          p: 2,
+                          transition: "0.3s",
+                          "&:hover": { boxShadow: 6 },
+                        }}
+                      >
+                        <img
+                          src={pkg.image_urls?.[0] || "/assets/images/default-package.jpg"}
+                          alt={pkg.title}
+                          style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8 }}
+                        />
+                        <Typography variant="h6" mt={1}>{pkg.title}</Typography>
+                        <Typography variant="body2" color="text.secondary">{pkg.location}</Typography>
+                        <Typography variant="body2">₹{pkg.price} • {pkg.duration} days</Typography>
+                        <Typography variant="caption" color="text.secondary">{pkg.category}</Typography>
+                      </Box>
+                    </Link>
                   ))}
             </Box>
           </Box>
