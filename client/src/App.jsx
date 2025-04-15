@@ -22,6 +22,7 @@ import FooterTabs from "./components/TabsComponent";
 import Blogs from "./pages/Blogs";
 import CreateBlog from "./pages/CreateBlog";
 import BlogDetail from "./pages/BlogDetail";
+import MapPage from "./pages/MapPage";
 
 function AppRoutes() {
   const { user, role,  loading  } = useAuth();
@@ -42,6 +43,7 @@ function AppRoutes() {
       <Route path="/package/:id" element={<SinglePackage />} />
       <Route path="/blogs" element={<Blogs />} />
       <Route path="/blogs/:id" element={<BlogDetail />} />
+      <Route path="/map" element={<MapPage />} />
 
       {/* 🔹 Role-Based Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user", "admin", "agency"]}><Dashboard /></ProtectedRoute>} />

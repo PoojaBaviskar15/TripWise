@@ -4,7 +4,6 @@ import { supabase } from "../../supabase";
 import { HeartIcon as SolidHeart } from "@heroicons/react/24/solid";
 import { HeartIcon as OutlineHeart } from "@heroicons/react/24/outline";
 import ReviewForm from "../components/ReviewForm";
-import ReviewList from "../components/ReviewList";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { Box } from "@mui/material";
 import ErrorBoundary from "../components/ErrorBoundary";
@@ -204,7 +203,6 @@ export default function SinglePackage() {
               setComment={setNewComment}
               submitting={submitting}
             />
-            <ReviewList reviews={reviews} />
           </Box>
         </ErrorBoundary>
       </div>

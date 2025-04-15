@@ -1,7 +1,11 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../supabase';
-import { Box, Typography, Rating, TextField, Button } from '@mui/material';
+import { Box, Typography, Rating, TextField, Button, Grid, Card, CardContent } from '@mui/material';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+
+dayjs.extend(relativeTime);
 
 const BlogDetails = () => {
   const { id: blogId } = useParams();
@@ -104,12 +108,12 @@ const BlogDetails = () => {
           onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
         />
         <Button onClick={handleSubmit} variant="contained" sx={{ mt: 2 }}>
-          Submit
+          Submit Review
         </Button>
       </Box>
 
       <Typography variant="h6">Reviews</Typography>
-      {reviews.length > 0 ? (
+      {/* {reviews.length > 0 ? (
         reviews.map((review) => (
           <Box key={review.id} mb={2} p={2} border="1px solid #ccc" borderRadius="10px">
             <Typography variant="subtitle2">{review.user?.username || 'Anonymous'}</Typography>
@@ -119,6 +123,34 @@ const BlogDetails = () => {
         ))
       ) : (
         <Typography>No reviews yet.</Typography>
+      )} */}
+      {reviews.length === 0 ? (
+        <Typography>No reviews yet.</Typography>
+      ) : (
+        <Grid container spacing={2}>
+          {reviews.map((review) => (
+            <Grid key={review.id} columns={12} style={{ gridColumn: 'span 12' }}>
+              <Card elevation={2}>
+                <CardContent sx={{ display: 'flex', gap: 2 }}>
+                  <Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Typography variant="subtitle1" fontWeight="bold">
+                        {review.user?.fullname || 'Anonymous'}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {dayjs(review.created_at).format('MMM D, YYYY [at] h:mm A')}
+                      </Typography>
+                    </Box>
+                    <Rating value={review.rating} readOnly size="small" sx={{ mt: 0.5 }} />
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {review.comment}
+                    </Typography>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
       )}
     </Box>
   );
