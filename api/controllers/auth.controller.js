@@ -200,3 +200,73 @@ export const getReviewsByPackage = async (req, res) => {
   }
 };
 
+// 🔹 Add a new blog
+export const addBlog = async (req, res) => {
+  try {
+    const { title, content, image_url, category, place, user_id } = req.body;
+
+    if (!title || !content || !user_id) {
+      return res.status(400).json({ error: "Title, content, and user ID are required." });
+    }
+
+    const { data, error } = await supabase.from("blogs").insert([
+      {
+        title,
+        content,
+        image_url,
+        category,
+        place,
+        user_id,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+
+    if (error) throw error;
+
+    res.status(201).json({ message: "Blog posted successfully", data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔹 Get all blogs (optionally filtered by category or place)
+export const getBlogs = async (req, res) => {
+  try {
+    const { category, place } = req.query;
+
+    let query = supabase
+      .from("blogs")
+      .select("*, user:user_id(fullname, email)")  // ✅ Corrected join fields
+      .order("created_at", { ascending: false });
+
+    if (category) query = query.eq("category", category);
+    if (place) query = query.eq("place", place);
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// 🔹 Get a specific blog by ID
+export const getBlogById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from("blogs")
+      .select("*, user:user_id(fullname, email)")  // ✅ Corrected join fields
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

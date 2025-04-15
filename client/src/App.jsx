@@ -19,6 +19,9 @@ import WishlistPage from "./pages/WishlistPage";
 import MyReviewsPage from "./pages/MyReviewsPage";
 import Layout from "./components/Layout";
 import FooterTabs from "./components/TabsComponent";
+import Blogs from "./pages/Blogs";
+import CreateBlog from "./pages/CreateBlog";
+import BlogDetail from "./pages/BlogDetail";
 
 function AppRoutes() {
   const { user, role,  loading  } = useAuth();
@@ -37,6 +40,8 @@ function AppRoutes() {
       <Route path="/pending-approval" element={<PendingApproval />} />
       <Route path="/packages" element={<TourPackages />} />
       <Route path="/package/:id" element={<SinglePackage />} />
+      <Route path="/blogs" element={<Blogs />} />
+      <Route path="/blogs/:id" element={<BlogDetail />} />
 
       {/* 🔹 Role-Based Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user", "admin", "agency"]}><Dashboard /></ProtectedRoute>} />
@@ -53,6 +58,8 @@ function AppRoutes() {
         {/* <Route path="/account/:userId" element={<AccountSettings />} /> */}
       </Route>
 
+      <Route path="/create-blog" element={<ProtectedRoute allowedRoles={["user",  "agency"]}><CreateBlog /></ProtectedRoute>} />
+      
 
     </Routes>
   );

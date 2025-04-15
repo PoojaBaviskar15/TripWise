@@ -26,6 +26,9 @@ import {
   checkAuthSession,
   addReview,
   getReviewsByPackage,
+  addBlog,
+  getBlogs,
+  getBlogById,
 } from "../controllers/auth.controller.js";
 
 const router = express.Router();
@@ -42,5 +45,11 @@ router.get("/session", checkAuthSession);
 // Review routes
 router.post("/reviews", addReview);
 router.get("/reviews/:packageId", getReviewsByPackage);
+
+// Blog routes
+router.post("/blogs", addBlog);
+router.get("/blogs", getBlogs);
+router.get("/blogs/:id", getBlogById);
+
 
 export default router;
