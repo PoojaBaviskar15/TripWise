@@ -43,7 +43,7 @@ function AppRoutes() {
       <Route path="/package/:id" element={<SinglePackage />} />
       <Route path="/blogs" element={<Blogs />} />
       <Route path="/blogs/:id" element={<BlogDetail />} />
-      <Route path="/map" element={<MapPage />} />
+      <Route path="/map" element={<MapPage />}/>
 
       {/* 🔹 Role-Based Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user", "admin", "agency"]}><Dashboard /></ProtectedRoute>} />

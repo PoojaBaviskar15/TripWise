@@ -1,9 +1,9 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabase';
 import { Box, Typography, Rating, TextField, Button, Grid, Card, CardContent } from '@mui/material';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { supabase } from '../../supabase';
 
 dayjs.extend(relativeTime);
 
@@ -113,17 +113,7 @@ const BlogDetails = () => {
       </Box>
 
       <Typography variant="h6">Reviews</Typography>
-      {/* {reviews.length > 0 ? (
-        reviews.map((review) => (
-          <Box key={review.id} mb={2} p={2} border="1px solid #ccc" borderRadius="10px">
-            <Typography variant="subtitle2">{review.user?.username || 'Anonymous'}</Typography>
-            <Rating value={review.rating} readOnly />
-            <Typography variant="body2">{review.comment}</Typography>
-          </Box>
-        ))
-      ) : (
-        <Typography>No reviews yet.</Typography>
-      )} */}
+
       {reviews.length === 0 ? (
         <Typography>No reviews yet.</Typography>
       ) : (

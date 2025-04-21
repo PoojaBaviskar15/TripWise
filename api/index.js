@@ -18,6 +18,7 @@ const app = express();
 // ✅ Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ✅ Auth & User Routes
 app.use('/auth/vi', userRouter);
@@ -30,6 +31,13 @@ app.get('/api/reviews/:package_id', getReviewsByPackage);
 app.post('/api/blogs', addBlog);
 app.get('/api/blogs', getBlogs);
 app.get('/api/blogs/:blogId', getBlogById);
+
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy' });
+});
+
 
 // ✅ Default Route
 app.get('/', (req, res) => {
