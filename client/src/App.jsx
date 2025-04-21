@@ -27,10 +27,13 @@ import MapPage from "./pages/MapPage";
 function AppRoutes() {
   const { user, role,  loading  } = useAuth();
 
+  console.log("AppRoutes rendered"); // 👈 Add this line
+
   if (loading) {
     return <div>Loading...</div>; // ✅ Show loading screen while auth is being checked
   }
   return (
+
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
@@ -68,6 +71,7 @@ function AppRoutes() {
 }
 
 export default function App() {
+  console.log("App Rendered");
   return (
     <AuthProvider>
       <BrowserRouter>
