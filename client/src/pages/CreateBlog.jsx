@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabase';
 import { Box, TextField, Button, Typography, Stack, Chip, MenuItem } from '@mui/material';
+import { extractEventFromText } from '../services/extractedEventFromText';
 
 const categoryOptions = ['Festivals', 'Heritage', 'Food', 'Architecture', 'Art'];
 
@@ -88,7 +89,6 @@ const CreateBlog = () => {
   
     return imageUrls;
   };
-  
 
   const handleSubmit = async () => {
     if (!form.title || !form.content || !form.place || !form.category) {
@@ -109,6 +109,23 @@ const CreateBlog = () => {
       console.error('Error creating blog:', error.message);
       setUploading(false);
       return;
+    }
+
+    if (!error) {
+      const eventInfo = await extractEventFromText(form.content);  // Use form.content here
+      if (eventInfo) {
+        await supabase.from("events").insert({
+          name: eventInfo.event,
+          start_date: eventInfo.start_date,
+          end_date: eventInfo.end_date,
+          place: eventInfo.location,
+          is_upcoming: eventInfo.is_upcoming === "yes",
+          recurring: eventInfo.recurring === "yes",
+          status: "pending",
+          source_type: "blog",
+          source_id: blogData.id,
+        });
+      }
     }
 
     // Upload images if present

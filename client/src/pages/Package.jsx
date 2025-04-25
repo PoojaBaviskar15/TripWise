@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../../supabase";
 import {
@@ -25,8 +25,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 
 export default function PackagesPage() {
   const [packages, setPackages] = useState([]);
-  const [filteredPackages, setFilteredPackages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [categoryFilters, setCategoryFilters] = useState([]);
   const [placeFilters, setPlaceFilters] = useState([]);
   const [priceRange, setPriceRange] = useState([0, 100000]);
@@ -34,9 +32,36 @@ export default function PackagesPage() {
   const [sortOption, setSortOption] = useState("");
   const [expanded, setExpanded] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  const applyFilters = () => {
+  const fetchData = async () => {
+    setLoading(true);  // Start loading
+    setError(null);    // Reset any previous errors
+
+    try {
+      const { data, error } = await supabase.from("tour_packages").select("*");
+      if (error) {
+        throw error;
+      }
+      setPackages(data);  // Set data from Supabase
+    } catch (error) {
+      setError(error.message);  // Log error if fetching fails
+    } finally {
+      setLoading(false);  // Stop loading
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("darkMode", JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  const applyFilters = useMemo(() => {
     let filtered = [...packages];
     if (categoryFilters.length > 0) {
       filtered = filtered.filter(pkg => categoryFilters.includes(pkg.category));
@@ -53,8 +78,8 @@ export default function PackagesPage() {
       filtered.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
 
-    setFilteredPackages(filtered);
-  };
+    return filtered;
+  }, [packages, categoryFilters, placeFilters, priceRange, durationRange, sortOption]);
 
   const resetFilters = () => {
     setCategoryFilters([]);
@@ -64,28 +89,27 @@ export default function PackagesPage() {
     setSortOption("");
   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const { data: packagesData } = await supabase.from("tour_packages").select("*");
-      setPackages(packagesData);
-      setFilteredPackages(packagesData);
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    applyFilters();
-  }, [categoryFilters, placeFilters, priceRange, durationRange, sortOption]);
-
   return (
     <ThemeProvider theme={createTheme({ palette: { mode: darkMode ? "dark" : "light" } })}>
       <Box display="flex" flexDirection="column" gap={2} p={2}>
+        {/* Error Message */}
+        {error && (
+          <Box color="error.main">
+            <Typography variant="body1">Error: {error}</Typography>
+          </Box>
+        )}
+
+        {/* Loading Spinner */}
+        {loading && (
+          <Box display="flex" justifyContent="center" alignItems="center">
+            <Typography variant="h6">Loading Packages...</Typography>
+          </Box>
+        )}
+
+        {!loading && !error && (
         <Box display="flex" justifyContent="space-between" flexWrap="wrap" gap={2}>
           <Box display="flex" alignItems="center" gap={1}>
-            <IconButton onClick={() => setDarkMode(!darkMode)}>
+            <IconButton onClick={() => setDarkMode(prev => !prev)}>
               {darkMode ? "☀️" : "🌙"}
             </IconButton>
             <Button variant="outlined" onClick={resetFilters}>
@@ -113,6 +137,7 @@ export default function PackagesPage() {
             </Select>
           </Box>
         </Box>
+        )}
 
         <Box display="flex" flexDirection={isMobile ? "column" : "row"} gap={2}>
           {/* Filters Sidebar */}
@@ -134,6 +159,7 @@ export default function PackagesPage() {
                             prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
                           )
                         }
+                        aria-label={`Filter by category: ${cat}`}
                       />
                     }
                     label={cat}
@@ -152,6 +178,7 @@ export default function PackagesPage() {
                             prev.includes(loc) ? prev.filter(l => l !== loc) : [...prev, loc]
                           )
                         }
+                        aria-label={`Filter by place: ${loc}`}
                       />
                     }
                     label={loc}
@@ -194,7 +221,7 @@ export default function PackagesPage() {
                 gap: 2
               }}
             >
-              {loading
+              {packages.length === 0
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <Box key={i}>
                       <Skeleton variant="rectangular" height={200} />
@@ -202,9 +229,9 @@ export default function PackagesPage() {
                       <Skeleton width="40%" />
                     </Box>
                   ))
-                : filteredPackages.length === 0
+                : applyFilters.length === 0
                 ? <Typography variant="body1">No matching packages found.</Typography>
-                : filteredPackages.map(pkg => (
+                : applyFilters.map(pkg => (
                     <Link to={`/package/${pkg.id}`} key={pkg.id} style={{ textDecoration: 'none', color: 'inherit' }}>
                       <Box
                         sx={{

@@ -34,7 +34,13 @@ export default function Header() {
                         <li className='hidden sm:inline hover:underline'>Packages</li>
                     </Link>
                     <Link to={'/blogs'}>
-                        <li className='hidden sm:inline hover:underline'>Experience</li>
+                        <li className='hidden sm:inline hover:underline'>Blogs</li>
+                    </Link>
+                    <Link to={'/places-map'}>
+                        <li className='hidden sm:inline hover:underline'>Discover Maps</li>
+                    </Link>
+                    <Link to={'/events'}>
+                        <li className='hidden sm:inline hover:underline'>Event Calendar</li>
                     </Link>
                 </ul>
                 {user ? (

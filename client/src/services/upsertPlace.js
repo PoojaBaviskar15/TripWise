@@ -7,11 +7,14 @@ export const upsertPlace = async (place) => {
     .upsert([
       {
         id: place.id,
-        place_name: place.place_name,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        popularity_score: place.popularity_score,
-        category_guess: place.category_guess,
+        name: place.name,
+        lat: place.lat,
+        long: place.long,
+        popularity_score: place.popularity_score || 0,
+        category_guess: place.category_guess || null,
+        blog_ids: place.blog_ids || [],
+        review_ids: place.review_ids || [],
+        added_at: new Date().toISOString()
       },
     ]);
 

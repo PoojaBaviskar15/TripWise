@@ -1,5 +1,10 @@
 @import "tailwindcss";
 @layer theme, base, components, utilities;
+@layer components {
+  .input {
+    @apply w-full border p-2 rounded outline-none focus:ring-2 focus:ring-indigo-500;
+  }
+}
 
 
 

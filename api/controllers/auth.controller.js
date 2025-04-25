@@ -2,34 +2,52 @@ import { supabase } from "../../client/supabase.js"; // Make sure this path is c
 
 // 🔹 Signup Function (User, Agency, Admin)
 export const signUp = async (email, password, role, additionalData) => {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  try {
+    // Check if user already exists
+    const { data: existingUser, error: checkUserError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .single();
 
-  if (error) {
-    console.error("Signup Error:", error);
-    throw error;
-  }
+    if (checkUserError) {
+      console.error("Error checking user existence:", checkUserError);
+      throw checkUserError;
+    }
 
-  if (!data.user) throw new Error("Signup failed. Please try again.");
+    if (existingUser) {
+      throw new Error("User already exists with this email.");
+    }
 
-  const userId = data.user.id;
-  console.log("✅ User created with ID:", userId);
+    // Sign up the user in Supabase Auth
+    const { data, error } = await supabase.auth.signUp({ email, password });
 
-  const { error: userError } = await supabase.from("users").insert([
-    {
+    if (error) {
+      console.error("Signup Error:", error);
+      throw error;
+    }
+
+    if (!data.user) throw new Error("Signup failed. Please try again.");
+
+    const userId = data.user.id;
+    console.log("✅ User created with ID:", userId);
+
+    // Insert user data into the 'users' table
+    const { error: userError } = await supabase.from("users").insert([{
       id: userId,
       email,
       fullname: additionalData.fullname,
       role,
-    },
-  ]);
-  if (userError) {
-    console.error("❌ User Table Insert Error:", userError);
-    throw userError;
-  }
+    }]);
 
-  if (role === "agency") {
-    const { error: agencyError } = await supabase.from("agencies").insert([
-      {
+    if (userError) {
+      console.error("❌ User Table Insert Error:", userError);
+      throw userError;
+    }
+
+    if (role === "agency") {
+      // Insert agency details if role is 'agency'
+      const { error: agencyError } = await supabase.from("agencies").insert([{
         user_id: userId,
         agency_name: additionalData.agency_name,
         contact_number: additionalData.contact_number,
@@ -37,41 +55,58 @@ export const signUp = async (email, password, role, additionalData) => {
         description: additionalData.description || "N/A",
         status: "pending",
         created_at: new Date().toISOString(),
-      },
-    ]);
-    if (agencyError) {
-      console.error("Agency Table Insert Error:", agencyError);
-      throw agencyError;
-    }
-    console.log("✅ Agency registration successful!");
-  } else if (role === "admin") {
-    if (additionalData.admin_code !== "SECRET123") {
-      throw new Error("Invalid admin code.");
-    }
-    const { error: adminError } = await supabase.from("admins").insert([
-      { user_id: userId, admin_code: additionalData.admin_code, email },
-    ]);
-    if (adminError) {
-      console.error("Admin Table Insert Error:", adminError);
-      throw adminError;
-    }
-    console.log("✅ Admin registration successful!");
-  }
+      }]);
 
-  return data;
+      if (agencyError) {
+        console.error("Agency Table Insert Error:", agencyError);
+        throw agencyError;
+      }
+
+      console.log("✅ Agency registration successful!");
+    } else if (role === "admin") {
+      // Insert admin details if role is 'admin'
+      if (additionalData.admin_code !== "SECRET123") {
+        throw new Error("Invalid admin code.");
+      }
+
+      const { error: adminError } = await supabase.from("admins").insert([{
+        user_id: userId,
+        admin_code: additionalData.admin_code,
+        email,
+      }]);
+
+      if (adminError) {
+        console.error("Admin Table Insert Error:", adminError);
+        throw adminError;
+      }
+
+      console.log("✅ Admin registration successful!");
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error during sign up:", error.message);
+    throw error;
+  }
 };
 
 // 🔹 Sign In Function
 export const signIn = async (email, password) => {
   try {
+    // Sign out previous session
     await supabase.auth.signOut();
 
+    // Sign in the user
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error("Sign-in Error:", error);
+      throw error;
+    }
+
     if (!data.session) throw new Error("Invalid sign-in credentials.");
 
     const { data: userData, error: roleError } = await supabase
@@ -80,56 +115,79 @@ export const signIn = async (email, password) => {
       .eq("id", data.user.id)
       .maybeSingle();
 
+    if (roleError) {
+      console.error("Error fetching user role:", roleError);
+      throw roleError;
+    }
+
     if (userData.role === "agency") {
+      // Check if the agency is approved
       const { data: agencyData, error: agencyError } = await supabase
         .from("agencies")
         .select("status")
         .eq("user_id", data.user.id)
         .single();
 
-      if (agencyError) throw agencyError;
+      if (agencyError) {
+        console.error("Error fetching agency status:", agencyError);
+        throw agencyError;
+      }
+
       if (agencyData.status !== "approved") {
         throw new Error("Your agency account is pending approval by an admin.");
       }
     }
 
-    if (roleError) throw roleError;
-
     return { ...data, role: userData?.role || "user" };
-  } catch (err) {
-    console.error("Sign-in error:", err.message);
-    throw err;
+  } catch (error) {
+    console.error("Sign-in error:", error.message);
+    throw error;
   }
 };
 
 // 🔹 Logout Function
 export const logout = async () => {
-  const { error } = await supabase.auth.signOut();
-  if (error) throw error;
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
+  } catch (error) {
+    console.error("Logout Error:", error);
+    throw error;
+  }
 };
 
 // 🔹 Get Current User
 export const getCurrentUser = async () => {
-  const { data, error } = await supabase.auth.getUser();
-  if (error) throw error;
-  return data.user;
+  try {
+    const { data, error } = await supabase.auth.getUser();
+    if (error) throw error;
+    return data.user;
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    throw error;
+  }
 };
 
 // 🔹 Delete User Account
 export const deleteAccount = async () => {
-  const { data: user, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) throw new Error("User not found.");
+  try {
+    const { data: user, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("User not found.");
 
-  const userId = user.id;
+    const userId = user.id;
 
-  await supabase.from("users").delete().eq("id", userId);
-  await supabase.from("agencies").delete().eq("user_id", userId);
-  await supabase.from("admins").delete().eq("user_id", userId);
+    await supabase.from("users").delete().eq("id", userId);
+    await supabase.from("agencies").delete().eq("user_id", userId);
+    await supabase.from("admins").delete().eq("user_id", userId);
 
-  const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(userId);
-  if (deleteAuthError) throw deleteAuthError;
+    const { error: deleteAuthError } = await supabase.auth.admin.deleteUser(userId);
+    if (deleteAuthError) throw deleteAuthError;
 
-  return { success: true };
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting account:", error);
+    throw error;
+  }
 };
 
 // 🔹 Fetch All Users
@@ -138,24 +196,28 @@ export const fetchUsers = async () => {
     const { data, error } = await supabase.from("users").select("*");
     if (error) throw new Error(error.message);
     return data;
-  } catch (err) {
-    console.error("Error fetching users:", err);
+  } catch (error) {
+    console.error("Error fetching users:", error);
     return [];
   }
 };
 
 // 🔹 Check Auth Session
 export const checkAuthSession = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  if (error) {
-    console.error("Error fetching session:", error);
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error("Error fetching session:", error);
+      return null;
+    }
+    return data?.session;
+  } catch (error) {
+    console.error("Error checking auth session:", error);
     return null;
   }
-  return data?.session;
 };
 
-
-// Add a new review
+// 🔹 Add a new review
 export const addReview = async (req, res) => {
   try {
     const { package_id, user_id, rating, comment } = req.body;
@@ -164,14 +226,12 @@ export const addReview = async (req, res) => {
       return res.status(400).json({ error: "All fields are required." });
     }
 
-    const { data, error } = await supabase.from("reviews").insert([
-      {
-        package_id,
-        user_id,
-        rating,
-        comment,
-      },
-    ]);
+    const { data, error } = await supabase.from("reviews").insert([{
+      package_id,
+      user_id,
+      rating,
+      comment,
+    }]);
 
     if (error) throw error;
 
@@ -209,17 +269,15 @@ export const addBlog = async (req, res) => {
       return res.status(400).json({ error: "Title, content, and user ID are required." });
     }
 
-    const { data, error } = await supabase.from("blogs").insert([
-      {
-        title,
-        content,
-        image_url,
-        category,
-        place,
-        user_id,
-        created_at: new Date().toISOString(),
-      },
-    ]);
+    const { data, error } = await supabase.from("blogs").insert([{
+      title,
+      content,
+      image_url,
+      category,
+      place,
+      user_id,
+      created_at: new Date().toISOString(),
+    }]);
 
     if (error) throw error;
 

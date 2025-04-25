@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { logout, deleteAccount } from "../../../api/controllers/auth.controller";
 import { useAuth } from "../components/AuthContext";
+import FestivalSubmissionWrapper from "../components/FestivalSubmission";
 
 export default function UserDashboard() {
   const navigate = useNavigate();
@@ -26,6 +27,9 @@ export default function UserDashboard() {
     <div className="p-6 max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold">User Dashboard</h1>
       <p>Welcome, {user?.email}</p>
+
+      <FestivalSubmissionWrapper />
+
 
       <button onClick={handleLogout} className="mt-4 bg-red-600 text-white px-4 py-2 rounded-lg">
         Sign Out

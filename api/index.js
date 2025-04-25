@@ -38,6 +38,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy' });
 });
 
+app.use('/data', express.static('src/data'));
+
 
 // ✅ Default Route
 app.get('/', (req, res) => {

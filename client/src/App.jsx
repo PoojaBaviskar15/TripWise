@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import { useAuth, AuthProvider } from "./components/AuthContext";
 import Home from "./pages/Home";
 import About from "./pages/About";
@@ -23,20 +23,17 @@ import Blogs from "./pages/Blogs";
 import CreateBlog from "./pages/CreateBlog";
 import BlogDetail from "./pages/BlogDetail";
 import MapPage from "./pages/MapPage";
+import EventsCalendar from "./pages/EventsCalendar";
 
 function AppRoutes() {
   const { user, role,  loading  } = useAuth();
 
-  console.log("AppRoutes rendered"); // 👈 Add this line
+  console.log("Component rendered");
 
-  if (loading) {
-    return <div>Loading...</div>; // ✅ Show loading screen while auth is being checked
-  }
   return (
 
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
       <Route path="/about" element={<About />} />
       <Route path="/package" element={<Package />} />
       <Route path="/sign-in" element={<SignIn />} />
@@ -46,9 +43,10 @@ function AppRoutes() {
       <Route path="/package/:id" element={<SinglePackage />} />
       <Route path="/blogs" element={<Blogs />} />
       <Route path="/blogs/:id" element={<BlogDetail />} />
-      <Route path="/map" element={<MapPage />}/>
+      <Route path="/places-map" element={<MapPage />}/>
+      <Route path="/events" element={<EventsCalendar />} />
 
-      {/* 🔹 Role-Based Protected Routes */}
+      {/* Role-Based Protected Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRoles={["user", "admin", "agency"]}><Dashboard /></ProtectedRoute>} />
       <Route path="/agency-dashboard" element={<ProtectedRoute allowedRoles={["agency", "admin"]}><AgencyDashboard /></ProtectedRoute>} />
       <Route path="/admin-dashboard" element={<ProtectedRoute allowedRoles={["admin"]}><AdminDashboard/></ProtectedRoute>} />
@@ -74,11 +72,13 @@ export default function App() {
   console.log("App Rendered");
   return (
     <AuthProvider>
-      <BrowserRouter>
+     <div>
         <Header />
         <AppRoutes />
         <FooterTabs />
-      </BrowserRouter>
+     </div>
+       
+     
     </AuthProvider>
   );
 }

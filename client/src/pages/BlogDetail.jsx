@@ -4,6 +4,7 @@ import { Box, Typography, Rating, TextField, Button, Grid, Card, CardContent } f
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { supabase } from '../../supabase';
+import { extractEventFromText } from '../services/extractedEventFromText';
 
 dayjs.extend(relativeTime);
 
@@ -65,6 +66,23 @@ const BlogDetails = () => {
       rating: newReview.rating,
       comment: newReview.comment
     }]);
+
+    if (!error) {
+      const eventInfo = await extractEventFromText(content);
+      if (eventInfo) {
+        await supabase.from("events").insert({
+          name: eventInfo.event,
+          start_date: eventInfo.start_date,
+          end_date: eventInfo.end_date,
+          place: eventInfo.location,
+          is_upcoming: eventInfo.is_upcoming === "yes",
+          recurring: eventInfo.recurring === "yes",
+          status: "pending",
+          source_type: "blog",
+          source_id: data[0].id,
+        });
+      }
+    }
 
     if (!error && data) {
       setReviews(prev => [data[0], ...prev]);
